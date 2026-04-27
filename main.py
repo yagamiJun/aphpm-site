@@ -9,13 +9,13 @@ from flask import (Flask, render_template, request, jsonify,
                    session, redirect, url_for)
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__, template_folder='Templates', static_folder='Static', static_url_path='/static')
+app = Flask(__name__, template_folder='Templates', static_folder='static', static_url_path='/static')
 app.secret_key = "aphpm_secret_key_changez_moi_2025"
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "aphpm2025"
 
-UPLOAD_FOLDER  = os.path.join("Static", "uploads")
+UPLOAD_FOLDER  = os.path.join("static", "uploads")
 ALLOWED_IMAGES = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_VIDEOS = {"mp4", "webm", "ogg", "mov"}
 DATA_FILE      = os.path.join("data", "content.json")
@@ -97,8 +97,8 @@ def admin_requis(f):
 
 def logo_existe():
     for ext in ALLOWED_IMAGES:
-        if os.path.exists(os.path.join("Static", f"logo.{ext}")):
-            return f"/Static/logo.{ext}"  # ✅ majuscule = URL réelle sur Render
+        if os.path.exists(os.path.join("static", f"logo.{ext}")):
+            return f"/static/logo.{ext}"
     return None
 
 messages_recus = []
@@ -179,20 +179,20 @@ def changer_logo():
     if not extension_ok(fichier.filename, ALLOWED_IMAGES):
         return jsonify({"success": False, "message": "Format non supporté."})
     for ext in ALLOWED_IMAGES:
-        ancien = os.path.join("Static", f"logo.{ext}")
+        ancien = os.path.join("static", f"logo.{ext}")
         if os.path.exists(ancien):
             os.remove(ancien)
     ext = fichier.filename.rsplit(".", 1)[1].lower()
-    chemin = os.path.join("Static", f"logo.{ext}")
+    chemin = os.path.join("static", f"logo.{ext}")
     fichier.save(chemin)
-    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/Static/logo.{ext}"})  # ✅ majuscule
+    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/static/logo.{ext}"})
 
 @app.route("/admin/logo/supprimer", methods=["DELETE"])
 @admin_requis
 def supprimer_logo():
     supprime = False
     for ext in ALLOWED_IMAGES:
-        chemin = os.path.join("Static", f"logo.{ext}")
+        chemin = os.path.join("static", f"logo.{ext}")
         if os.path.exists(chemin):
             os.remove(chemin)
             supprime = True
