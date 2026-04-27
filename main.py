@@ -9,7 +9,7 @@ from flask import (Flask, render_template, request, jsonify,
                    session, redirect, url_for)
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='Templates', static_folder='Static')
 app.secret_key = "aphpm_secret_key_changez_moi_2025"
 
 ADMIN_USERNAME = "admin"
