@@ -9,7 +9,7 @@ from flask import (Flask, render_template, request, jsonify,
                    session, redirect, url_for)
 from werkzeug.utils import secure_filename
 
-app = Flask(__name__, template_folder='Templates', static_folder='Static')
+app = Flask(__name__, template_folder='Templates', static_folder='Static', static_url_path='/static')
 app.secret_key = "aphpm_secret_key_changez_moi_2025"
 
 ADMIN_USERNAME = "admin"
@@ -98,7 +98,7 @@ def admin_requis(f):
 def logo_existe():
     for ext in ALLOWED_IMAGES:
         if os.path.exists(os.path.join("Static", f"logo.{ext}")):
-            return f"/static/logo.{ext}"   # ✅ minuscule
+            return f"/Static/logo.{ext}"  # ✅ majuscule = URL réelle sur Render
     return None
 
 messages_recus = []
@@ -185,7 +185,7 @@ def changer_logo():
     ext = fichier.filename.rsplit(".", 1)[1].lower()
     chemin = os.path.join("Static", f"logo.{ext}")
     fichier.save(chemin)
-    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/static/logo.{ext}"})  # ✅ minuscule
+    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/Static/logo.{ext}"})  # ✅ majuscule
 
 @app.route("/admin/logo/supprimer", methods=["DELETE"])
 @admin_requis
