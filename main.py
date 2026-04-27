@@ -98,7 +98,7 @@ def admin_requis(f):
 def logo_existe():
     for ext in ALLOWED_IMAGES:
         if os.path.exists(os.path.join("Static", f"logo.{ext}")):
-            return f"/Static/logo.{ext}"
+            return f"/static/logo.{ext}"   # ✅ minuscule
     return None
 
 messages_recus = []
@@ -185,7 +185,7 @@ def changer_logo():
     ext = fichier.filename.rsplit(".", 1)[1].lower()
     chemin = os.path.join("Static", f"logo.{ext}")
     fichier.save(chemin)
-    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/Static/logo.{ext}"})
+    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/static/logo.{ext}"})  # ✅ minuscule
 
 @app.route("/admin/logo/supprimer", methods=["DELETE"])
 @admin_requis
