@@ -15,7 +15,7 @@ app.secret_key = "aphpm_secret_key_changez_moi_2025"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "aphpm2025"
 
-UPLOAD_FOLDER  = os.path.join("static", "uploads")
+UPLOAD_FOLDER  = os.path.join("Static", "uploads")
 ALLOWED_IMAGES = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_VIDEOS = {"mp4", "webm", "ogg", "mov"}
 DATA_FILE      = os.path.join("data", "content.json")
@@ -66,7 +66,7 @@ SITE_DEFAUT = {
 
 def lire_data():
     try:
-        with open(DATA_FILE, "r", encoding="utf-8") as f:
+        with open(DATA_FILE, "r", encoding="utf-8-sig") as f:
             return json.load(f)
     except (FileNotFoundError, json.JSONDecodeError):
         return {"photos": [], "videos": [], "temoignages": [],
@@ -97,8 +97,8 @@ def admin_requis(f):
 
 def logo_existe():
     for ext in ALLOWED_IMAGES:
-        if os.path.exists(os.path.join("static", f"logo.{ext}")):
-            return f"/static/logo.{ext}"
+        if os.path.exists(os.path.join("Static", f"logo.{ext}")):
+            return f"/Static/logo.{ext}"
     return None
 
 messages_recus = []
@@ -179,20 +179,20 @@ def changer_logo():
     if not extension_ok(fichier.filename, ALLOWED_IMAGES):
         return jsonify({"success": False, "message": "Format non supporté."})
     for ext in ALLOWED_IMAGES:
-        ancien = os.path.join("static", f"logo.{ext}")
+        ancien = os.path.join("Static", f"logo.{ext}")
         if os.path.exists(ancien):
             os.remove(ancien)
     ext = fichier.filename.rsplit(".", 1)[1].lower()
-    chemin = os.path.join("static", f"logo.{ext}")
+    chemin = os.path.join("Static", f"logo.{ext}")
     fichier.save(chemin)
-    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/static/logo.{ext}"})
+    return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/Static/logo.{ext}"})
 
 @app.route("/admin/logo/supprimer", methods=["DELETE"])
 @admin_requis
 def supprimer_logo():
     supprime = False
     for ext in ALLOWED_IMAGES:
-        chemin = os.path.join("static", f"logo.{ext}")
+        chemin = os.path.join("Static", f"logo.{ext}")
         if os.path.exists(chemin):
             os.remove(chemin)
             supprime = True
