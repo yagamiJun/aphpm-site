@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>APHPM — Panneau Admin</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy:#0d1f3c; --navy-mid:#1a3a6b;
+      --gold:#c8922a; --gold-light:#e8b54a;
+      --cream:#faf8f4; --white:#ffffff;
+      --text:#1a1a2e; --muted:#6b7280;
+      --border:rgba(200,146,42,0.18);
+      --red:#dc2626; --green:#16a34a;
+      --sidebar:260px;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'DM Sans',sans-serif;background:#f1f5f9;color:var(--text);display:flex;min-height:100vh;}
+
+    .sidebar{width:var(--sidebar);background:var(--navy);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;}
+    .sidebar-header{padding:28px 20px 20px;border-bottom:1px solid rgba(255,255,255,0.08);}
+    .sidebar-brand{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+    .brand-icon{width:44px;height:44px;border-radius:50%;background:rgba(200,146,42,0.2);border:1px solid rgba(200,146,42,0.4);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--gold-light);overflow:hidden;flex-shrink:0;}
+    .brand-icon img{width:100%;height:100%;object-fit:cover;}
+    .brand-name{color:#fff;font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:700;}
+    .brand-sub{font-size:0.68rem;color:rgba(255,255,255,0.4);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px;}
+    .sidebar-nav{flex:1;padding:16px 12px;}
+    .nav-section-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.12em;color:rgba(255,255,255,0.35);padding:16px 8px 8px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-radius:10px;color:rgba(255,255,255,0.65);font-size:0.87rem;font-weight:500;transition:all 0.2s;margin-bottom:2px;cursor:pointer;user-select:none;}
+    .nav-item:hover{background:rgba(255,255,255,0.1);color:#fff;}
+    .nav-item.active{background:rgba(200,146,42,0.2);color:var(--gold-light);}
+    .nav-icon{font-size:1rem;width:20px;text-align:center;}
+    .nav-badge{margin-left:auto;background:rgba(200,146,42,0.25);color:var(--gold-light);font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:50px;border:1px solid rgba(200,146,42,0.3);}
+    .sidebar-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,0.08);}
+    .logo-section{margin-bottom:12px;}
+    .logo-section-label{font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:rgba(255,255,255,0.35);padding:0 2px;margin-bottom:8px;display:block;}
+    .logo-drop{border:1.5px dashed rgba(255,255,255,0.2);border-radius:10px;padding:14px;text-align:center;cursor:pointer;transition:all 0.2s;}
+    .logo-drop:hover{border-color:var(--gold);background:rgba(200,146,42,0.08);}
+    .logo-drop-text{font-size:0.73rem;color:rgba(255,255,255,0.4);margin-top:6px;}
+    .logo-preview-img{width:48px;height:48px;border-radius:50%;object-fit:cover;border:2px solid var(--gold);margin:0 auto 6px;display:block;}
+    .logo-btns{display:flex;gap:6px;margin-top:8px;}
+    .btn-logo-save{flex:1;background:var(--gold);color:var(--navy);border:none;padding:8px;border-radius:8px;font-size:0.75rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+    .btn-logo-save:hover{background:var(--gold-light);}
+    .btn-logo-del{background:rgba(220,38,38,0.15);color:#fca5a5;border:none;padding:8px 10px;border-radius:8px;font-size:0.75rem;cursor:pointer;transition:all 0.2s;}
+    .btn-logo-del:hover{background:var(--red);color:#fff;}
+    .sidebar-link{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;color:rgba(255,255,255,0.5);text-decoration:none;font-size:0.85rem;font-weight:500;transition:all 0.2s;}
+    .sidebar-link:hover{background:rgba(255,255,255,0.08);color:rgba(255,255,255,0.9);}
+
+    .main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;}
+    .topbar{background:#fff;padding:0 32px;height:68px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #e5e7eb;position:sticky;top:0;z-index:50;}
+    .topbar-left h1{font-family:'Cormorant Garamond',serif;font-size:1.3rem;color:var(--navy);font-weight:700;}
+    .topbar-left p{font-size:0.78rem;color:var(--muted);margin-top:1px;}
+    .btn-view-site{background:var(--navy);color:#fff;padding:9px 20px;border-radius:50px;font-size:0.82rem;font-weight:600;text-decoration:none;transition:all 0.2s;}
+    .btn-view-site:hover{background:var(--navy-mid);}
+    .content{padding:32px;flex:1;}
+    .tab-pane{display:none;}
+    .tab-pane.active{display:block;}
+
+    .stats-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;margin-bottom:28px;}
+    .stat-box{background:#fff;border-radius:16px;padding:22px 18px;border:1px solid #e5e7eb;display:flex;align-items:center;gap:14px;}
+    .stat-box-icon{width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0;}
+    .bg-navy{background:rgba(13,31,60,0.08);}
+    .bg-gold{background:rgba(200,146,42,0.12);}
+    .bg-green{background:rgba(22,163,74,0.1);}
+    .bg-red{background:rgba(220,38,38,0.08);}
+    .stat-box-num{font-family:'Cormorant Garamond',serif;font-size:1.9rem;font-weight:700;color:var(--navy);line-height:1;}
+    .stat-box-label{font-size:0.73rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-top:3px;}
+
+    .card{background:#fff;border-radius:18px;border:1px solid #e5e7eb;overflow:hidden;margin-bottom:24px;}
+    .card-header{padding:18px 24px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;justify-content:space-between;}
+    .card-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--navy);font-weight:700;}
+    .card-body{padding:24px;}
+
+    .fg{margin-bottom:16px;}
+    .fg.half{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    label{display:block;font-size:0.75rem;font-weight:700;color:var(--navy);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:7px;}
+    input[type=text],input[type=email],input[type=url],input[type=color],select,textarea{
+      width:100%;padding:10px 14px;border:1.5px solid #e0e0ec;border-radius:9px;
+      font-family:'DM Sans',sans-serif;font-size:0.88rem;color:var(--text);
+      background:var(--cream);transition:all 0.2s;outline:none;resize:vertical;
+    }
+    input[type=color]{padding:4px 8px;height:42px;cursor:pointer;}
+    input:focus,select:focus,textarea:focus{border-color:var(--navy-mid);background:#fff;box-shadow:0 0 0 3px rgba(26,58,107,0.08);}
+    textarea{min-height:90px;}
+    .file-zone{border:2px dashed #d1d5db;border-radius:10px;padding:20px;text-align:center;cursor:pointer;transition:all 0.2s;background:var(--cream);}
+    .file-zone:hover{border-color:var(--navy-mid);background:rgba(13,31,60,0.03);}
+    .file-zone input{display:none;}
+    .file-zone-label{font-size:0.85rem;color:var(--muted);}
+    .file-zone-label strong{color:var(--navy-mid);}
+    .file-name{margin-top:6px;font-size:0.78rem;color:var(--gold);}
+
+    .btn{padding:10px 22px;border-radius:50px;font-family:'DM Sans',sans-serif;font-size:0.85rem;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;}
+    .btn-primary{background:var(--navy);color:#fff;}
+    .btn-primary:hover{background:var(--navy-mid);transform:translateY(-1px);}
+    .btn-gold{background:var(--gold);color:#fff;}
+    .btn-gold:hover{background:var(--gold-light);}
+    .btn-danger{background:rgba(220,38,38,0.08);color:var(--red);border:1px solid rgba(220,38,38,0.2);}
+    .btn-danger:hover{background:var(--red);color:#fff;}
+    .btn-sm{padding:6px 14px;font-size:0.78rem;}
+
+    .items-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;}
+    .item-card{background:var(--cream);border-radius:14px;overflow:hidden;border:1px solid #e5e7eb;}
+    .item-card img{width:100%;height:130px;object-fit:cover;display:block;}
+    .item-card-body{padding:12px;}
+    .item-card-title{font-size:0.82rem;font-weight:600;color:var(--text);margin-bottom:10px;line-height:1.4;}
+
+    .list-entry{display:flex;align-items:flex-start;gap:14px;padding:16px;border:1px solid #e5e7eb;border-radius:12px;background:var(--cream);margin-bottom:10px;transition:all 0.2s;}
+    .list-entry:hover{border-color:rgba(13,31,60,0.2);background:#fff;}
+    .list-entry-icon{width:42px;height:42px;border-radius:10px;background:rgba(13,31,60,0.08);display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex-shrink:0;}
+    .list-entry-body{flex:1;min-width:0;}
+    .list-entry-title{font-weight:600;font-size:0.88rem;color:var(--navy);margin-bottom:4px;}
+    .list-entry-sub{font-size:0.8rem;color:var(--muted);line-height:1.5;}
+    .list-entry-actions{flex-shrink:0;}
+
+    .msg-card{background:var(--cream);border:1px solid #e5e7eb;border-radius:12px;padding:18px;margin-bottom:12px;}
+    .msg-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+    .msg-sender{font-weight:700;font-size:0.9rem;color:var(--navy);}
+    .msg-email{font-size:0.78rem;color:var(--muted);margin-left:6px;}
+    .msg-tag{background:rgba(200,146,42,0.12);color:var(--gold);font-size:0.73rem;font-weight:700;padding:3px 10px;border-radius:50px;border:1px solid rgba(200,146,42,0.25);}
+    .msg-body{font-size:0.88rem;color:var(--text);line-height:1.7;}
+
+    .or-sep{text-align:center;color:var(--muted);font-size:0.8rem;margin:16px 0;position:relative;}
+    .or-sep::before,.or-sep::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:#e5e7eb;}
+    .or-sep::before{left:0;}.or-sep::after{right:0;}
+
+    .vid-thumb{width:100%;height:110px;background:var(--navy);border-radius:8px 8px 0 0;display:flex;align-items:center;justify-content:center;font-size:2.5rem;overflow:hidden;}
+    .vid-thumb video{width:100%;height:100%;object-fit:cover;}
+
+    .empty{text-align:center;padding:48px 20px;color:var(--muted);}
+    .empty-icon{font-size:2.5rem;opacity:0.35;margin-bottom:12px;}
+    .empty p{font-size:0.88rem;}
+
+    .toast{position:fixed;bottom:24px;right:24px;z-index:9999;background:#fff;border-radius:12px;padding:16px 20px;box-shadow:0 8px 32px rgba(0,0,0,0.12);border-left:4px solid var(--green);font-size:0.88rem;font-weight:500;color:var(--text);transform:translateY(100px);opacity:0;transition:all 0.4s cubic-bezier(.34,1.56,.64,1);max-width:320px;}
+    .toast.show{transform:translateY(0);opacity:1;}
+    .toast.error{border-left-color:var(--red);}
+
+    /* PERSONNALISATION */
+    .perso-section{margin-bottom:28px;}
+    .perso-section-title{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--navy);font-weight:700;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid #f1f5f9;}
+    .perso-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+    .perso-grid.three{grid-template-columns:1fr 1fr 1fr;}
+    .color-row{display:flex;align-items:center;gap:12px;}
+    .color-preview{width:32px;height:32px;border-radius:8px;border:2px solid #e5e7eb;flex-shrink:0;}
+  </style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-brand">
+      <div class="brand-icon" id="sidebarIcon">
+        {% if logo %}<img src="{{ logo }}" alt="Logo" id="sidebarLogoImg">{% else %}<span>A</span>{% endif %}
+      </div>
+      <div>
+        <div class="brand-name">APHPM</div>
+        <div class="brand-sub">Administration</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Vue d'ensemble</div>
+    <div class="nav-item active" onclick="showTab('dashboard',this)"><span class="nav-icon">📊</span> Tableau de bord</div>
+    <div class="nav-section-label">Contenu</div>
+    <div class="nav-item" onclick="showTab('personnaliser',this)"><span class="nav-icon">🎨</span> Personnaliser le site</div>
+    <div class="nav-item" onclick="showTab('photos',this)"><span class="nav-icon">🖼️</span> Photos<span class="nav-badge">{{ data.photos|length }}</span></div>
+    <div class="nav-item" onclick="showTab('videos',this)"><span class="nav-icon">🎬</span> Vidéos<span class="nav-badge">{{ data.videos|length }}</span></div>
+    <div class="nav-item" onclick="showTab('temoignages',this)"><span class="nav-icon">💬</span> Témoignages<span class="nav-badge">{{ data.temoignages|length }}</span></div>
+    <div class="nav-item" onclick="showTab('actualites',this)"><span class="nav-icon">📰</span> Actualités<span class="nav-badge">{{ data.actualites|length }}</span></div>
+    <div class="nav-item" onclick="showTab('services',this)"><span class="nav-icon">⭐</span> Services<span class="nav-badge">{{ data.services|length }}</span></div>
+    <div class="nav-section-label">Communication</div>
+    <div class="nav-item" onclick="showTab('messages',this)"><span class="nav-icon">📨</span> Messages<span class="nav-badge">{{ messages|length }}</span></div>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="logo-section">
+      <span class="logo-section-label">Logo du site</span>
+      <div class="logo-drop" onclick="document.getElementById('logoInput').click()">
+        <input type="file" id="logoInput" accept="image/*" onchange="previewLogo(this)">
+        {% if logo %}
+          <img src="{{ logo }}" class="logo-preview-img" id="logoPreviewEl">
+        {% else %}
+          <div style="font-size:1.8rem;opacity:0.4;">🖼️</div>
+          <div class="logo-drop-text">Cliquer pour un logo</div>
+        {% endif %}
+      </div>
+      <div class="logo-btns">
+        <button class="btn-logo-save" onclick="changerLogo()">✅ Appliquer</button>
+        <button class="btn-logo-del" onclick="supprimerLogo()" title="Supprimer">🗑️</button>
+      </div>
+    </div>
+    <a href="/" class="sidebar-link" target="_blank">🌐 Voir le site</a>
+    <a href="/admin/logout" class="sidebar-link">🚪 Déconnexion</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <h1>Panneau Admin</h1>
+      <p>Association des Personnes Handicapées du Pays de Matam</p>
+    </div>
+    <a href="/" target="_blank" class="btn-view-site">🌐 Voir le site public</a>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="tab-pane active" id="tab-dashboard">
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-box-icon bg-navy">🖼️</div><div><div class="stat-box-num">{{ data.photos|length }}</div><div class="stat-box-label">Photos</div></div></div>
+        <div class="stat-box"><div class="stat-box-icon bg-gold">🎬</div><div><div class="stat-box-num">{{ data.videos|length }}</div><div class="stat-box-label">Vidéos</div></div></div>
+        <div class="stat-box"><div class="stat-box-icon bg-green">💬</div><div><div class="stat-box-num">{{ data.temoignages|length }}</div><div class="stat-box-label">Témoignages</div></div></div>
+        <div class="stat-box"><div class="stat-box-icon bg-navy">📰</div><div><div class="stat-box-num">{{ data.actualites|length }}</div><div class="stat-box-label">Actualités</div></div></div>
+        <div class="stat-box"><div class="stat-box-icon bg-gold">⭐</div><div><div class="stat-box-num">{{ data.services|length }}</div><div class="stat-box-label">Services</div></div></div>
+        <div class="stat-box"><div class="stat-box-icon bg-red">📨</div><div><div class="stat-box-num">{{ messages|length }}</div><div class="stat-box-label">Messages</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">👋 Bienvenue dans le panneau admin</span></div>
+        <div class="card-body">
+          <p style="color:var(--muted);font-size:0.9rem;line-height:1.8;">Utilisez le menu à gauche pour gérer tout le contenu du site. Cliquez sur <strong>🎨 Personnaliser le site</strong> pour modifier les textes, couleurs et coordonnées.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- PERSONNALISER -->
+    <div class="tab-pane" id="tab-personnaliser">
+      <div class="card">
+        <div class="card-header"><span class="card-title">🎨 Personnaliser le site</span></div>
+        <div class="card-body">
+
+          <div class="perso-section">
+            <div class="perso-section-title">🏠 Identité du site</div>
+            <div class="perso-grid">
+              <div class="fg"><label>Nom du site</label><input type="text" id="p_nom_site" value="{{ site.nom_site }}"></div>
+              <div class="fg"><label>Slogan</label><input type="text" id="p_slogan" value="{{ site.slogan }}"></div>
+            </div>
+          </div>
+
+          <div class="perso-section">
+            <div class="perso-section-title">🎯 Section Hero (bannière principale)</div>
+            <div class="fg"><label>Badge d'accroche</label><input type="text" id="p_hero_badge" value="{{ site.hero_badge }}"></div>
+            <div class="perso-grid three">
+              <div class="fg"><label>Titre ligne 1</label><input type="text" id="p_hero_titre_1" value="{{ site.hero_titre_1 }}"></div>
+              <div class="fg"><label>Titre ligne 2</label><input type="text" id="p_hero_titre_2" value="{{ site.hero_titre_2 }}"></div>
+              <div class="fg"><label>Titre ligne 3 (italique)</label><input type="text" id="p_hero_titre_3" value="{{ site.hero_titre_3 }}"></div>
+            </div>
+            <div class="fg"><label>Sous-titre</label><textarea id="p_hero_sous_titre">{{ site.hero_sous_titre }}</textarea></div>
+            <div class="perso-grid">
+              <div class="fg"><label>Bouton principal</label><input type="text" id="p_hero_btn_1" value="{{ site.hero_btn_1 }}"></div>
+              <div class="fg"><label>Bouton secondaire</label><input type="text" id="p_hero_btn_2" value="{{ site.hero_btn_2 }}"></div>
+            </div>
+          </div>
+
+          <div class="perso-section">
+            <div class="perso-section-title">📊 Statistiques hero</div>
+            <div class="perso-grid three">
+              <div class="fg"><label>Stat 1 — Chiffre</label><input type="text" id="p_stat_1_num" value="{{ site.stat_1_num }}"></div>
+              <div class="fg"><label>Stat 1 — Label</label><input type="text" id="p_stat_1_label" value="{{ site.stat_1_label }}"></div>
+              <div></div>
+              <div class="fg"><label>Stat 2 — Chiffre</label><input type="text" id="p_stat_2_num" value="{{ site.stat_2_num }}"></div>
+              <div class="fg"><label>Stat 2 — Label</label><input type="text" id="p_stat_2_label" value="{{ site.stat_2_label }}"></div>
+              <div></div>
+              <div class="fg"><label>Stat 3 — Chiffre</label><input type="text" id="p_stat_3_num" value="{{ site.stat_3_num }}"></div>
+              <div class="fg"><label>Stat 3 — Label</label><input type="text" id="p_stat_3_label" value="{{ site.stat_3_label }}"></div>
+            </div>
+          </div>
+
+          <div class="perso-section">
+            <div class="perso-section-title">ℹ️ Section À propos</div>
+            <div class="fg"><label>Paragraphe 1</label><textarea id="p_about_p1">{{ site.about_p1 }}</textarea></div>
+            <div class="fg"><label>Paragraphe 2</label><textarea id="p_about_p2">{{ site.about_p2 }}</textarea></div>
+            <div class="perso-grid">
+              <div class="fg"><label>Titre de la vision</label><input type="text" id="p_vision_titre" value="{{ site.vision_titre }}"></div>
+            </div>
+            <div class="fg"><label>Texte de la vision</label><textarea id="p_vision_texte">{{ site.vision_texte }}</textarea></div>
+          </div>
+
+          <div class="perso-section">
+            <div class="perso-section-title">📞 Coordonnées de contact</div>
+            <div class="perso-grid three">
+              <div class="fg"><label>Adresse</label><input type="text" id="p_contact_adresse" value="{{ site.contact_adresse }}"></div>
+              <div class="fg"><label>Téléphone</label><input type="text" id="p_contact_telephone" value="{{ site.contact_telephone }}"></div>
+              <div class="fg"><label>Email</label><input type="text" id="p_contact_email" value="{{ site.contact_email }}"></div>
+            </div>
+          </div>
+
+          <div class="perso-section">
+            <div class="perso-section-title">🦶 Footer</div>
+            <div class="fg"><label>Description footer</label><textarea id="p_footer_desc">{{ site.footer_desc }}</textarea></div>
+            <div class="fg"><label>Mention copyright</label><input type="text" id="p_footer_copy" value="{{ site.footer_copy }}"></div>
+          </div>
+
+          <div class="perso-section">
+            <div class="perso-section-title">🎨 Couleurs</div>
+            <div class="perso-grid">
+              <div class="fg">
+                <label>Couleur principale (Navy)</label>
+                <div class="color-row">
+                  <input type="color" id="p_couleur_navy" value="{{ site.couleur_navy }}" style="width:80px;">
+                  <input type="text" id="p_couleur_navy_txt" value="{{ site.couleur_navy }}" placeholder="#0d1f3c" style="flex:1;">
+                </div>
+              </div>
+              <div class="fg">
+                <label>Couleur accent (Gold)</label>
+                <div class="color-row">
+                  <input type="color" id="p_couleur_gold" value="{{ site.couleur_gold }}" style="width:80px;">
+                  <input type="text" id="p_couleur_gold_txt" value="{{ site.couleur_gold }}" placeholder="#c8922a" style="flex:1;">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-gold" onclick="sauvegarderSite()" style="width:100%;padding:14px;font-size:0.95rem;">💾 Sauvegarder toutes les modifications</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- PHOTOS -->
+    <div class="tab-pane" id="tab-photos">
+      <div class="card">
+        <div class="card-header"><span class="card-title">➕ Ajouter une photo</span></div>
+        <div class="card-body">
+          <div class="fg">
+            <label>Image (JPG, PNG, GIF, WEBP)</label>
+            <div class="file-zone" onclick="document.getElementById('photoFile').click()">
+              <input type="file" id="photoFile" accept="image/*" onchange="document.getElementById('photoFN').textContent=this.files[0]?.name||''">
+              <div class="file-zone-label">📂 <strong>Cliquez</strong> pour choisir une image</div>
+              <div class="file-name" id="photoFN"></div>
+            </div>
+          </div>
+          <div class="fg"><label>Légende (optionnel)</label><input type="text" id="photoLegende" placeholder="Description de la photo..."></div>
+          <button class="btn btn-primary" onclick="ajouterPhoto()">📤 Uploader la photo</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">🖼️ Galerie ({{ data.photos|length }})</span></div>
+        <div class="card-body">
+          {% if data.photos %}
+          <div class="items-grid">
+            {% for photo in data.photos %}
+            <div class="item-card" id="photo-{{ photo.id }}">
+              <img src="/static/uploads/{{ photo.fichier }}" alt="{{ photo.legende }}">
+              <div class="item-card-body">
+                <div class="item-card-title">{{ photo.legende or 'Sans légende' }}</div>
+                <button class="btn btn-danger btn-sm" onclick="supprimerPhoto('{{ photo.id }}')">🗑️ Supprimer</button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty"><div class="empty-icon">🖼️</div><p>Aucune photo.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- VIDÉOS -->
+    <div class="tab-pane" id="tab-videos">
+      <div class="card">
+        <div class="card-header"><span class="card-title">➕ Ajouter une vidéo</span></div>
+        <div class="card-body">
+          <div class="fg"><label>Titre</label><input type="text" id="videoTitre" placeholder="Titre de la vidéo..."></div>
+          <div class="fg"><label>URL YouTube</label><input type="url" id="videoYt" placeholder="https://youtube.com/watch?v=..."></div>
+          <div class="or-sep">ou</div>
+          <div class="fg">
+            <label>Fichier vidéo (MP4, WEBM...)</label>
+            <div class="file-zone" onclick="document.getElementById('videoFile').click()">
+              <input type="file" id="videoFile" accept="video/*" onchange="document.getElementById('videoFN').textContent=this.files[0]?.name||''">
+              <div class="file-zone-label">📂 <strong>Cliquez</strong> pour choisir une vidéo</div>
+              <div class="file-name" id="videoFN"></div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="ajouterVideo()">📤 Ajouter</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">🎬 Vidéos ({{ data.videos|length }})</span></div>
+        <div class="card-body">
+          {% if data.videos %}
+          <div class="items-grid">
+            {% for video in data.videos %}
+            <div class="item-card" id="video-{{ video.id }}">
+              <div class="vid-thumb">{% if video.type=='youtube' %}🎬{% else %}<video src="/static/uploads/{{ video.fichier }}"></video>{% endif %}</div>
+              <div class="item-card-body">
+                <div class="item-card-title">{{ video.titre or 'Sans titre' }}<br><span style="font-size:0.72rem;color:var(--muted);">{% if video.type=='youtube' %}YouTube{% else %}Fichier{% endif %}</span></div>
+                <button class="btn btn-danger btn-sm" onclick="supprimerVideo('{{ video.id }}')">🗑️ Supprimer</button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty"><div class="empty-icon">🎬</div><p>Aucune vidéo.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- TÉMOIGNAGES -->
+    <div class="tab-pane" id="tab-temoignages">
+      <div class="card">
+        <div class="card-header"><span class="card-title">➕ Ajouter un témoignage</span></div>
+        <div class="card-body">
+          <div class="fg half">
+            <div><label>Nom complet *</label><input type="text" id="temNom" placeholder="Amadou Diallo"></div>
+            <div><label>Lieu / Situation</label><input type="text" id="temLieu" placeholder="Membre, Dakar"></div>
+          </div>
+          <div class="fg"><label>Témoignage *</label><textarea id="temTexte" placeholder="Écrivez le témoignage ici..."></textarea></div>
+          <button class="btn btn-primary" onclick="ajouterTemoignage()">💬 Ajouter</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">💬 Témoignages ({{ data.temoignages|length }})</span></div>
+        <div class="card-body">
+          {% if data.temoignages %}
+            {% for t in data.temoignages %}
+            <div class="list-entry" id="tem-{{ t.id }}">
+              <div class="list-entry-icon" style="font-family:'Cormorant Garamond',serif;font-weight:700;color:var(--navy);font-size:0.88rem;">{{ t.initiales }}</div>
+              <div class="list-entry-body">
+                <div class="list-entry-title">{{ t.nom }}</div>
+                <div class="list-entry-sub">{{ t.lieu }}<br><em>{{ t.texte[:100] }}{% if t.texte|length>100 %}...{% endif %}</em></div>
+              </div>
+              <div class="list-entry-actions"><button class="btn btn-danger btn-sm" onclick="supprimerTemoignage('{{ t.id }}')">🗑️</button></div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="empty"><div class="empty-icon">💬</div><p>Aucun témoignage.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- ACTUALITÉS -->
+    <div class="tab-pane" id="tab-actualites">
+      <div class="card">
+        <div class="card-header"><span class="card-title">➕ Publier une actualité</span></div>
+        <div class="card-body">
+          <div class="fg half">
+            <div><label>Titre *</label><input type="text" id="actuTitre" placeholder="Titre..."></div>
+            <div><label>Date</label><input type="text" id="actuDate" placeholder="Avril 2025"></div>
+          </div>
+          <div class="fg"><label>Emoji</label><input type="text" id="actuEmoji" placeholder="📰" style="max-width:90px;"></div>
+          <div class="fg"><label>Contenu *</label><textarea id="actuContenu" placeholder="Contenu de l'actualité..."></textarea></div>
+          <button class="btn btn-primary" onclick="ajouterActualite()">📰 Publier</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">📰 Actualités ({{ data.actualites|length }})</span></div>
+        <div class="card-body">
+          {% if data.actualites %}
+            {% for a in data.actualites %}
+            <div class="list-entry" id="actu-{{ a.id }}">
+              <div class="list-entry-icon">{{ a.emoji }}</div>
+              <div class="list-entry-body">
+                <div class="list-entry-title">{{ a.titre }}</div>
+                <div class="list-entry-sub">{{ a.date }} — {{ a.contenu[:80] }}{% if a.contenu|length>80 %}...{% endif %}</div>
+              </div>
+              <div class="list-entry-actions"><button class="btn btn-danger btn-sm" onclick="supprimerActualite('{{ a.id }}')">🗑️</button></div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="empty"><div class="empty-icon">📰</div><p>Aucune actualité.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="tab-pane" id="tab-services">
+      <div class="card">
+        <div class="card-header"><span class="card-title">➕ Ajouter un service</span></div>
+        <div class="card-body">
+          <div class="fg half">
+            <div><label>Titre *</label><input type="text" id="servTitre" placeholder="Nom du service..."></div>
+            <div><label>Emoji</label><input type="text" id="servEmoji" placeholder="⭐" style="max-width:90px;"></div>
+          </div>
+          <div class="fg"><label>Description *</label><textarea id="servDesc" placeholder="Description du service..."></textarea></div>
+          <button class="btn btn-primary" onclick="ajouterService()">⭐ Ajouter</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">⭐ Services ({{ data.services|length }})</span></div>
+        <div class="card-body">
+          {% if data.services %}
+            {% for s in data.services %}
+            <div class="list-entry" id="serv-{{ s.id }}">
+              <div class="list-entry-icon">{{ s.emoji }}</div>
+              <div class="list-entry-body">
+                <div class="list-entry-title">{{ s.titre }}</div>
+                <div class="list-entry-sub">{{ s.description }}</div>
+              </div>
+              <div class="list-entry-actions"><button class="btn btn-danger btn-sm" onclick="supprimerService('{{ s.id }}')">🗑️</button></div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="empty"><div class="empty-icon">⭐</div><p>Aucun service.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="tab-pane" id="tab-messages">
+      <div class="card">
+        <div class="card-header"><span class="card-title">📨 Messages reçus ({{ messages|length }})</span></div>
+        <div class="card-body">
+          {% if messages %}
+            {% for msg in messages %}
+            <div class="msg-card">
+              <div class="msg-top">
+                <div><span class="msg-sender">{{ msg.prenom }} {{ msg.nom }}</span><span class="msg-email">— {{ msg.email }}</span></div>
+                <span class="msg-tag">{{ msg.objet }}</span>
+              </div>
+              <div class="msg-body">{{ msg.message }}</div>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="empty"><div class="empty-icon">📭</div><p>Aucun message reçu.</p></div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  function showTab(name, el) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    el.classList.add('active');
+  }
+
+  function showToast(msg, isErr=false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'toast' + (isErr ? ' error' : '');
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+  }
+
+  // Sync couleur picker <-> texte
+  document.getElementById('p_couleur_navy').addEventListener('input', function() {
+    document.getElementById('p_couleur_navy_txt').value = this.value;
+  });
+  document.getElementById('p_couleur_navy_txt').addEventListener('input', function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('p_couleur_navy').value = this.value;
+  });
+  document.getElementById('p_couleur_gold').addEventListener('input', function() {
+    document.getElementById('p_couleur_gold_txt').value = this.value;
+  });
+  document.getElementById('p_couleur_gold_txt').addEventListener('input', function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById('p_couleur_gold').value = this.value;
+  });
+
+  async function sauvegarderSite() {
+    const payload = {
+      nom_site:          document.getElementById('p_nom_site').value,
+      slogan:            document.getElementById('p_slogan').value,
+      hero_badge:        document.getElementById('p_hero_badge').value,
+      hero_titre_1:      document.getElementById('p_hero_titre_1').value,
+      hero_titre_2:      document.getElementById('p_hero_titre_2').value,
+      hero_titre_3:      document.getElementById('p_hero_titre_3').value,
+      hero_sous_titre:   document.getElementById('p_hero_sous_titre').value,
+      hero_btn_1:        document.getElementById('p_hero_btn_1').value,
+      hero_btn_2:        document.getElementById('p_hero_btn_2').value,
+      stat_1_num:        document.getElementById('p_stat_1_num').value,
+      stat_1_label:      document.getElementById('p_stat_1_label').value,
+      stat_2_num:        document.getElementById('p_stat_2_num').value,
+      stat_2_label:      document.getElementById('p_stat_2_label').value,
+      stat_3_num:        document.getElementById('p_stat_3_num').value,
+      stat_3_label:      document.getElementById('p_stat_3_label').value,
+      about_p1:          document.getElementById('p_about_p1').value,
+      about_p2:          document.getElementById('p_about_p2').value,
+      vision_titre:      document.getElementById('p_vision_titre').value,
+      vision_texte:      document.getElementById('p_vision_texte').value,
+      contact_adresse:   document.getElementById('p_contact_adresse').value,
+      contact_telephone: document.getElementById('p_contact_telephone').value,
+      contact_email:     document.getElementById('p_contact_email').value,
+      footer_desc:       document.getElementById('p_footer_desc').value,
+      footer_copy:       document.getElementById('p_footer_copy').value,
+      couleur_navy:      document.getElementById('p_couleur_navy_txt').value,
+      couleur_gold:      document.getElementById('p_couleur_gold_txt').value,
+    };
+    const r = await fetch('/admin/site/sauvegarder', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload)
+    });
+    const d = await r.json();
+    showToast(d.message, !d.success);
+  }
+
+  function previewLogo(input) {
+    if (!input.files[0]) return;
+    const url = URL.createObjectURL(input.files[0]);
+    const wrap = input.closest('.logo-drop');
+    let img = document.getElementById('logoPreviewEl');
+    if (!img) {
+      wrap.innerHTML = `<input type="file" id="logoInput" accept="image/*" onchange="previewLogo(this)" style="display:none"><img src="${url}" class="logo-preview-img" id="logoPreviewEl">`;
+      document.getElementById('logoInput').addEventListener('change', function(){ previewLogo(this); });
+    } else { img.src = url; }
+  }
+
+  async function changerLogo() {
+    const file = document.getElementById('logoInput').files[0];
+    if (!file) { showToast('⚠️ Sélectionnez une image d\'abord.', true); return; }
+    const fd = new FormData(); fd.append('logo', file);
+    const r = await fetch('/admin/logo/changer', {method:'POST', body:fd});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) {
+      const ic = document.getElementById('sidebarIcon');
+      ic.innerHTML = `<img src="${d.url}?t=${Date.now()}" alt="Logo" style="width:100%;height:100%;object-fit:cover;">`;
+    }
+  }
+
+  async function supprimerLogo() {
+    if (!confirm('Supprimer le logo ?')) return;
+    const r = await fetch('/admin/logo/supprimer', {method:'DELETE'});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) setTimeout(() => location.reload(), 1000);
+  }
+
+  async function ajouterPhoto() {
+    const file = document.getElementById('photoFile').files[0];
+    if (!file) { showToast('⚠️ Sélectionnez une image.', true); return; }
+    const fd = new FormData();
+    fd.append('photo', file);
+    fd.append('legende', document.getElementById('photoLegende').value.trim());
+    const r = await fetch('/admin/photos/ajouter', {method:'POST', body:fd});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) setTimeout(() => location.reload(), 1200);
+  }
+
+  async function supprimerPhoto(id) {
+    if (!confirm('Supprimer cette photo ?')) return;
+    const r = await fetch('/admin/photos/supprimer/' + id, {method:'DELETE'});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) document.getElementById('photo-' + id)?.remove();
+  }
+
+  async function ajouterVideo() {
+    const titre = document.getElementById('videoTitre').value.trim();
+    const yt    = document.getElementById('videoYt').value.trim();
+    const file  = document.getElementById('videoFile').files[0];
+    const fd = new FormData();
+    fd.append('titre', titre);
+    if (yt) fd.append('url_youtube', yt);
+    if (file) fd.append('video', file);
+    const r = await fetch('/admin/videos/ajouter', {method:'POST', body:fd});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) setTimeout(() => location.reload(), 1200);
+  }
+
+  async function supprimerVideo(id) {
+    if (!confirm('Supprimer cette vidéo ?')) return;
+    const r = await fetch('/admin/videos/supprimer/' + id, {method:'DELETE'});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) document.getElementById('video-' + id)?.remove();
+  }
+
+  async function ajouterTemoignage() {
+    const nom = document.getElementById('temNom').value.trim();
+    const lieu = document.getElementById('temLieu').value.trim();
+    const texte = document.getElementById('temTexte').value.trim();
+    if (!nom || !texte) { showToast('⚠️ Nom et témoignage obligatoires.', true); return; }
+    const r = await fetch('/admin/temoignages/ajouter', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({nom, lieu, texte})
+    });
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) setTimeout(() => location.reload(), 1200);
+  }
+
+  async function supprimerTemoignage(id) {
+    if (!confirm('Supprimer ce témoignage ?')) return;
+    const r = await fetch('/admin/temoignages/supprimer/' + id, {method:'DELETE'});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) document.getElementById('tem-' + id)?.remove();
+  }
+
+  async function ajouterActualite() {
+    const titre = document.getElementById('actuTitre').value.trim();
+    const contenu = document.getElementById('actuContenu').value.trim();
+    const date = document.getElementById('actuDate').value.trim();
+    const emoji = document.getElementById('actuEmoji').value.trim() || '📰';
+    if (!titre || !contenu) { showToast('⚠️ Titre et contenu obligatoires.', true); return; }
+    const r = await fetch('/admin/actualites/ajouter', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({titre, contenu, date, emoji})
+    });
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) setTimeout(() => location.reload(), 1200);
+  }
+
+  async function supprimerActualite(id) {
+    if (!confirm('Supprimer cette actualité ?')) return;
+    const r = await fetch('/admin/actualites/supprimer/' + id, {method:'DELETE'});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) document.getElementById('actu-' + id)?.remove();
+  }
+
+  async function ajouterService() {
+    const titre = document.getElementById('servTitre').value.trim();
+    const description = document.getElementById('servDesc').value.trim();
+    const emoji = document.getElementById('servEmoji').value.trim() || '⭐';
+    if (!titre || !description) { showToast('⚠️ Titre et description obligatoires.', true); return; }
+    const r = await fetch('/admin/services/ajouter', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({titre, description, emoji})
+    });
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) setTimeout(() => location.reload(), 1200);
+  }
+
+  async function supprimerService(id) {
+    if (!confirm('Supprimer ce service ?')) return;
+    const r = await fetch('/admin/services/supprimer/' + id, {method:'DELETE'});
+    const d = await r.json();
+    showToast(d.message, !d.success);
+    if (d.success) document.getElementById('serv-' + id)?.remove();
+  }
+</script>
+</body>
+</html>

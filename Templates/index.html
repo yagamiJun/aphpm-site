@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ site.nom_site }} — {{ site.slogan }}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: {{ site.couleur_navy }};
+      --navy-mid: #1a3a6b;
+      --gold: {{ site.couleur_gold }};
+      --gold-light: #e8b54a;
+      --cream: #faf8f4;
+      --text: #1a1a2e;
+      --text-muted: #5a5a72;
+      --border: rgba(200,146,42,0.2);
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--text); overflow-x:hidden; }
+
+    /* NAVBAR */
+    .navbar {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      padding:0 48px; height:72px;
+      display:flex; align-items:center; justify-content:space-between;
+      background:rgba(250,248,244,0.95); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border); transition:box-shadow 0.3s;
+    }
+    .navbar.scrolled { box-shadow:0 4px 24px rgba(13,31,60,0.08); }
+    .nav-logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+    .nav-logo-emblem {
+      width:44px; height:44px; border-radius:50%;
+      background:var(--navy);
+      display:flex; align-items:center; justify-content:center;
+      font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:700;
+      color:var(--gold-light); overflow:hidden;
+    }
+    .nav-logo-emblem img { width:100%; height:100%; object-fit:cover; }
+    .nav-logo-name { font-family:'Cormorant Garamond',serif; font-size:1.4rem; font-weight:700; color:var(--navy); }
+    .nav-menu { display:flex; align-items:center; gap:8px; list-style:none; }
+    .nav-link {
+      text-decoration:none; color:var(--text-muted); font-size:0.85rem; font-weight:500;
+      padding:8px 14px; border-radius:8px; transition:all 0.2s;
+    }
+    .nav-link:hover { color:var(--navy); background:rgba(13,31,60,0.06); }
+    .nav-link.cta { background:var(--navy); color:#fff; padding:9px 20px; border-radius:50px; }
+    .nav-link.cta:hover { background:var(--navy-mid); }
+    .hamburger { display:none; flex-direction:column; gap:5px; cursor:pointer; border:none; background:none; padding:8px; }
+    .hamburger span { display:block; width:24px; height:2px; background:var(--navy); border-radius:2px; }
+
+    /* HERO */
+    .hero {
+      min-height:100vh;
+      background: linear-gradient(160deg, var(--navy) 0%, #1a3a6b 55%, #0d2d5a 100%);
+      position:relative; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      padding:100px 48px 80px;
+    }
+    .hero::before {
+      content:''; position:absolute; inset:0;
+      background: radial-gradient(ellipse at 70% 40%, rgba(200,146,42,0.18) 0%, transparent 60%),
+                  radial-gradient(ellipse at 10% 80%, rgba(200,146,42,0.1) 0%, transparent 50%);
+    }
+    .hero-pattern {
+      position:absolute; inset:0; opacity:0.04;
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,1) 60px, rgba(255,255,255,1) 61px),
+                        repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,1) 60px, rgba(255,255,255,1) 61px);
+    }
+    .hero-content { position:relative; z-index:1; text-align:center; max-width:780px; }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(200,146,42,0.2); border:1px solid rgba(200,146,42,0.4);
+      color:var(--gold-light); font-size:0.78rem; font-weight:600;
+      padding:7px 18px; border-radius:50px; letter-spacing:0.08em;
+      text-transform:uppercase; margin-bottom:28px;
+    }
+    .hero-badge::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--gold-light); animation:pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+    .hero-title {
+      font-family:'Cormorant Garamond',serif;
+      font-size:clamp(2.8rem,6vw,5rem); font-weight:600; line-height:1.1;
+      color:#fff; margin-bottom:12px;
+    }
+    .hero-title em { font-style:italic; color:var(--gold-light); }
+    .hero-subtitle { font-size:1.05rem; color:rgba(255,255,255,0.7); line-height:1.8; max-width:580px; margin:0 auto 40px; }
+    .hero-actions { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; margin-bottom:60px; }
+    .btn-hero-primary {
+      background:var(--gold); color:#fff; padding:14px 32px; border-radius:50px;
+      font-weight:600; font-size:0.9rem; text-decoration:none; transition:all 0.3s;
+      box-shadow:0 8px 24px rgba(200,146,42,0.4);
+    }
+    .btn-hero-primary:hover { background:var(--gold-light); transform:translateY(-2px); }
+    .btn-hero-outline {
+      border:1.5px solid rgba(255,255,255,0.4); color:#fff;
+      padding:14px 32px; border-radius:50px;
+      font-weight:500; font-size:0.9rem; text-decoration:none; transition:all 0.3s;
+    }
+    .btn-hero-outline:hover { background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.7); }
+    .hero-stats {
+      display:flex; align-items:center; justify-content:center;
+      background:rgba(255,255,255,0.07); border:1px solid rgba(255,255,255,0.12);
+      border-radius:20px; padding:24px 48px; gap:48px; backdrop-filter:blur(8px);
+    }
+    .hero-stat-num { font-family:'Cormorant Garamond',serif; font-size:2.4rem; font-weight:700; color:var(--gold-light); display:block; line-height:1; }
+    .hero-stat-label { font-size:0.78rem; color:rgba(255,255,255,0.55); text-transform:uppercase; letter-spacing:0.08em; margin-top:4px; }
+
+    /* SECTIONS */
+    .section { padding:100px 0; }
+    .section-alt { background:#fff; }
+    .container { max-width:1140px; margin:0 auto; padding:0 48px; }
+    .section-header { text-align:center; margin-bottom:64px; }
+    .section-badge {
+      display:inline-block; font-size:0.72rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase;
+      color:var(--gold); background:rgba(200,146,42,0.1);
+      padding:6px 16px; border-radius:50px; border:1px solid var(--border); margin-bottom:16px;
+    }
+    .section-title { font-family:'Cormorant Garamond',serif; font-size:clamp(2rem,4vw,3rem); font-weight:600; color:var(--navy); line-height:1.2; margin-bottom:16px; }
+    .section-subtitle { font-size:1rem; color:var(--text-muted); max-width:520px; margin:0 auto; line-height:1.7; }
+
+    /* ABOUT */
+    .about-grid { display:grid; grid-template-columns:1fr 1fr; gap:64px; align-items:center; }
+    .about-text p { color:var(--text-muted); line-height:1.9; margin-bottom:20px; font-size:0.95rem; }
+    .about-values { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:32px; }
+    .value-item { display:flex; align-items:center; gap:10px; background:var(--cream); border:1px solid var(--border); padding:14px 18px; border-radius:12px; font-weight:500; font-size:0.88rem; color:var(--navy); }
+    .about-card { background:var(--navy); border-radius:24px; padding:48px 40px; position:relative; overflow:hidden; }
+    .about-card::before { content:''; position:absolute; top:-40px; right:-40px; width:180px; height:180px; border-radius:50%; background:rgba(200,146,42,0.15); }
+    .about-card-icon { font-size:2.5rem; margin-bottom:20px; }
+    .about-card h3 { font-family:'Cormorant Garamond',serif; font-size:1.6rem; color:#fff; margin-bottom:16px; }
+    .about-card p { color:rgba(255,255,255,0.7); line-height:1.8; font-size:0.92rem; margin-bottom:28px; }
+    .btn-card { display:inline-block; background:var(--gold); color:#fff; padding:11px 24px; border-radius:50px; font-weight:600; font-size:0.85rem; text-decoration:none; transition:all 0.2s; }
+    .btn-card:hover { background:var(--gold-light); }
+
+    /* SERVICES */
+    .services-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .service-card { background:var(--cream); border:1px solid var(--border); border-radius:20px; padding:36px 28px; transition:all 0.3s; position:relative; overflow:hidden; }
+    .service-card:hover { transform:translateY(-6px); box-shadow:0 20px 48px rgba(13,31,60,0.1); border-color:var(--gold); }
+    .service-icon { font-size:2rem; margin-bottom:20px; display:block; }
+    .service-title { font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:600; color:var(--navy); margin-bottom:12px; }
+    .service-desc { font-size:0.88rem; color:var(--text-muted); line-height:1.8; }
+
+    /* GALLERY */
+    .gallery-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+    .gallery-item { border-radius:16px; overflow:hidden; cursor:pointer; aspect-ratio:4/3; position:relative; }
+    .gallery-item img { width:100%; height:100%; object-fit:cover; transition:transform 0.4s; display:block; }
+    .gallery-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(13,31,60,0.7) 0%, transparent 60%); opacity:0; transition:opacity 0.3s; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; padding:20px; }
+    .gallery-item:hover img { transform:scale(1.06); }
+    .gallery-item:hover .gallery-overlay { opacity:1; }
+    .gallery-zoom { font-size:1.5rem; margin-bottom:8px; }
+    .gallery-legende { color:#fff; font-size:0.82rem; text-align:center; }
+    .empty-gallery { text-align:center; padding:80px 20px; color:var(--text-muted); }
+
+    /* LIGHTBOX */
+    .lightbox { position:fixed; inset:0; z-index:1000; background:rgba(10,15,30,0.95); backdrop-filter:blur(8px); display:none; align-items:center; justify-content:center; padding:40px; }
+    .lightbox.active { display:flex; flex-direction:column; gap:16px; }
+    .lightbox img { max-width:90vw; max-height:80vh; border-radius:12px; object-fit:contain; }
+    .lightbox p { color:rgba(255,255,255,0.7); font-size:0.9rem; }
+    .lightbox-close { position:absolute; top:24px; right:32px; background:none; border:none; color:rgba(255,255,255,0.7); font-size:1.8rem; cursor:pointer; }
+    .lightbox-close:hover { color:#fff; }
+
+    /* TÉMOIGNAGES */
+    .temoignages-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .temoignage-card { background:var(--cream); border:1px solid var(--border); border-radius:20px; padding:36px 28px; }
+    .temoignage-quote { font-family:'Cormorant Garamond',serif; font-size:4rem; line-height:1; color:var(--gold); opacity:0.5; margin-bottom:12px; }
+    .temoignage-texte { font-size:0.9rem; color:var(--text-muted); line-height:1.8; margin-bottom:24px; font-style:italic; }
+    .temoignage-author { display:flex; align-items:center; gap:14px; }
+    .temoignage-avatar { width:44px; height:44px; border-radius:50%; background:var(--navy); color:var(--gold-light); font-family:'Cormorant Garamond',serif; font-weight:700; font-size:1rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .temoignage-nom { font-weight:600; font-size:0.9rem; color:var(--navy); }
+    .temoignage-lieu { font-size:0.78rem; color:var(--text-muted); margin-top:2px; }
+
+    /* ACTUALITES */
+    .actualites-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .actu-card { background:#fff; border:1px solid var(--border); border-radius:20px; padding:32px 28px; transition:all 0.3s; }
+    .actu-card:hover { box-shadow:0 12px 40px rgba(13,31,60,0.08); transform:translateY(-4px); }
+    .actu-emoji { font-size:1.8rem; margin-bottom:12px; display:block; }
+    .actu-date { font-size:0.75rem; color:var(--gold); font-weight:700; letter-spacing:0.08em; text-transform:uppercase; margin-bottom:10px; }
+    .actu-titre { font-family:'Cormorant Garamond',serif; font-size:1.25rem; font-weight:600; color:var(--navy); margin-bottom:12px; }
+    .actu-contenu { font-size:0.88rem; color:var(--text-muted); line-height:1.8; }
+
+    /* CONTACT */
+    .contact-grid { display:grid; grid-template-columns:1fr 1.6fr; gap:64px; align-items:start; }
+    .contact-info { padding-top:8px; }
+    .contact-info h3 { font-family:'Cormorant Garamond',serif; font-size:1.8rem; color:var(--navy); margin-bottom:32px; }
+    .contact-item { display:flex; gap:16px; margin-bottom:24px; align-items:flex-start; }
+    .contact-icon-box { width:48px; height:48px; border-radius:12px; background:rgba(200,146,42,0.12); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:1.2rem; flex-shrink:0; }
+    .contact-item strong { display:block; font-size:0.82rem; color:var(--navy); font-weight:700; margin-bottom:4px; text-transform:uppercase; letter-spacing:0.06em; }
+    .contact-item span { font-size:0.9rem; color:var(--text-muted); }
+    .contact-form { background:#fff; border-radius:24px; padding:40px; border:1px solid var(--border); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+    .form-group { margin-bottom:20px; }
+    .form-group label { display:block; font-size:0.78rem; font-weight:700; color:var(--navy); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:8px; }
+    .form-group input, .form-group textarea { width:100%; padding:12px 16px; border:1.5px solid #e8e8f0; border-radius:10px; font-family:'DM Sans',sans-serif; font-size:0.9rem; color:var(--text); background:var(--cream); transition:all 0.2s; outline:none; resize:vertical; }
+    .form-group input:focus, .form-group textarea:focus { border-color:var(--navy-mid); background:#fff; box-shadow:0 0 0 3px rgba(26,58,107,0.08); }
+    .form-group textarea { min-height:120px; }
+    .btn-submit { width:100%; padding:14px; border-radius:50px; background:var(--navy); color:#fff; border:none; font-family:'DM Sans',sans-serif; font-size:0.92rem; font-weight:600; cursor:pointer; transition:all 0.3s; }
+    .btn-submit:hover { background:var(--navy-mid); transform:translateY(-2px); }
+    #contactRetour { margin-top:14px; font-size:0.88rem; text-align:center; }
+
+    /* VIDEOS */
+    .videos-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:20px; margin-top:32px; }
+    .video-card { border-radius:16px; overflow:hidden; border:1px solid var(--border); background:#fff; }
+    .video-card iframe, .video-card video { width:100%; height:200px; display:block; }
+    .video-titre { padding:14px 16px; font-size:0.88rem; font-weight:600; color:var(--navy); }
+
+    /* FOOTER */
+    .footer { background:var(--navy); padding:64px 0 40px; }
+    .footer-container { max-width:1140px; margin:0 auto; padding:0 48px; text-align:center; }
+    .footer-logo { display:flex; align-items:center; gap:12px; justify-content:center; margin-bottom:16px; }
+    .footer-logo-emblem { width:48px; height:48px; border-radius:50%; background:rgba(200,146,42,0.2); border:1px solid rgba(200,146,42,0.4); display:flex; align-items:center; justify-content:center; font-family:'Cormorant Garamond',serif; font-size:1.3rem; font-weight:700; color:var(--gold-light); overflow:hidden; }
+    .footer-logo-emblem img { width:100%; height:100%; object-fit:cover; }
+    .footer-logo-name { font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:700; color:#fff; }
+    .footer-desc { color:rgba(255,255,255,0.5); font-size:0.88rem; margin-bottom:32px; line-height:1.7; white-space:pre-line; }
+    .footer-divider { border:none; border-top:1px solid rgba(255,255,255,0.1); margin:32px 0; }
+    .footer-copy { color:rgba(255,255,255,0.3); font-size:0.78rem; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .navbar { padding:0 24px; }
+      .nav-menu { display:none; flex-direction:column; position:fixed; top:72px; left:0; right:0; background:rgba(250,248,244,0.98); padding:24px; gap:4px; border-bottom:1px solid var(--border); }
+      .nav-menu.open { display:flex; }
+      .hamburger { display:flex; }
+      .hero { padding:100px 24px 60px; }
+      .hero-stats { padding:20px 24px; gap:24px; flex-wrap:wrap; }
+      .about-grid, .contact-grid { grid-template-columns:1fr; gap:40px; }
+      .services-grid, .temoignages-grid, .actualites-grid { grid-template-columns:1fr; }
+      .gallery-grid { grid-template-columns:repeat(2,1fr); }
+      .form-row { grid-template-columns:1fr; }
+      .container { padding:0 24px; }
+      .section { padding:64px 0; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <a href="#accueil" class="nav-logo">
+    <div class="nav-logo-emblem">
+      {% if logo %}<img src="{{ logo }}" alt="Logo">{% else %}A{% endif %}
+    </div>
+    <span class="nav-logo-name">{{ site.nom_site }}</span>
+  </a>
+  <ul class="nav-menu" id="navMenu">
+    <li><a href="#accueil" class="nav-link">Accueil</a></li>
+    <li><a href="#about" class="nav-link">À propos</a></li>
+    <li><a href="#services" class="nav-link">Services</a></li>
+    <li><a href="#galerie" class="nav-link">Galerie</a></li>
+    <li><a href="#temoignages" class="nav-link">Témoignages</a></li>
+    <li><a href="#actualites" class="nav-link">Actualités</a></li>
+    <li><a href="#contact" class="nav-link cta">Contact</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="accueil">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-badge">{{ site.hero_badge }}</div>
+    <h1 class="hero-title">
+      {{ site.hero_titre_1 }}<br>{{ site.hero_titre_2 }}<br><em>{{ site.hero_titre_3 }}</em>
+    </h1>
+    <p class="hero-subtitle">{{ site.hero_sous_titre }}</p>
+    <div class="hero-actions">
+      <a href="#services" class="btn-hero-primary">{{ site.hero_btn_1 }}</a>
+      <a href="#contact" class="btn-hero-outline">{{ site.hero_btn_2 }}</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="hero-stat-num">{{ site.stat_1_num }}</span>
+        <span class="hero-stat-label">{{ site.stat_1_label }}</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">{{ site.stat_2_num }}</span>
+        <span class="hero-stat-label">{{ site.stat_2_label }}</span>
+      </div>
+      <div class="hero-stat">
+        <span class="hero-stat-num">{{ site.stat_3_num }}</span>
+        <span class="hero-stat-label">{{ site.stat_3_label }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- À PROPOS -->
+<section class="section" id="about">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Notre mission</div>
+      <h2 class="section-title">À propos de l'{{ site.nom_site }}</h2>
+      <p class="section-subtitle">Une association au service des personnes les plus vulnérables</p>
+    </div>
+    <div class="about-grid">
+      <div class="about-text">
+        <p>{{ site.about_p1 }}</p>
+        <p>{{ site.about_p2 }}</p>
+        <div class="about-values">
+          <div class="value-item"><span>🤝</span><span>Solidarité</span></div>
+          <div class="value-item"><span>⚖️</span><span>Dignité</span></div>
+          <div class="value-item"><span>🌟</span><span>Inclusion</span></div>
+          <div class="value-item"><span>💪</span><span>Autonomie</span></div>
+        </div>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">🏛️</div>
+        <h3>{{ site.vision_titre }}</h3>
+        <p>{{ site.vision_texte }}</p>
+        <a href="#contact" class="btn-card">Nous rejoindre →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section class="section section-alt" id="services">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Ce que nous faisons</div>
+      <h2 class="section-title">Nos services</h2>
+      <p class="section-subtitle">Un accompagnement global pour nos membres</p>
+    </div>
+    <div class="services-grid">
+      {% if data.services %}
+        {% for s in data.services %}
+        <div class="service-card">
+          <span class="service-icon">{{ s.emoji }}</span>
+          <h3 class="service-title">{{ s.titre }}</h3>
+          <p class="service-desc">{{ s.description }}</p>
+        </div>
+        {% endfor %}
+      {% else %}
+        <div class="service-card"><span class="service-icon">🩺</span><h3 class="service-title">Consultations Médicales</h3><p class="service-desc">Accès à des consultations médicales spécialisées à tarif réduit ou gratuit pour nos membres.</p></div>
+        <div class="service-card"><span class="service-icon">🧠</span><h3 class="service-title">Soutien Psychologique</h3><p class="service-desc">Suivi psychologique individuel et en groupe pour les personnes handicapées et leurs familles.</p></div>
+        <div class="service-card"><span class="service-icon">📖</span><h3 class="service-title">Cours & Formation</h3><p class="service-desc">Formations professionnelles adaptées pour favoriser l'autonomie et l'insertion économique.</p></div>
+        <div class="service-card"><span class="service-icon">⚙️</span><h3 class="service-title">Aides Techniques</h3><p class="service-desc">Aide à l'acquisition de fauteuils roulants, prothèses et autres équipements indispensables.</p></div>
+        <div class="service-card"><span class="service-icon">📜</span><h3 class="service-title">Assistance Juridique</h3><p class="service-desc">Accompagnement dans les démarches administratives et défense des droits en cas de discrimination.</p></div>
+        <div class="service-card"><span class="service-icon">🎭</span><h3 class="service-title">Activités Culturelles</h3><p class="service-desc">Organisation d'activités sportives, artistiques et culturelles pour favoriser le lien social.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+
+<!-- GALERIE -->
+<section class="section" id="galerie">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Nos moments</div>
+      <h2 class="section-title">Galerie</h2>
+      <p class="section-subtitle">Photos et vidéos de nos activités</p>
+    </div>
+    {% if data.photos %}
+    <div class="gallery-grid">
+      {% for photo in data.photos %}
+      <div class="gallery-item" onclick="ouvrirLightbox('/static/uploads/{{ photo.fichier }}','{{ photo.legende }}')">
+        <img src="/static/uploads/{{ photo.fichier }}" alt="{{ photo.legende }}" loading="lazy">
+        <div class="gallery-overlay">
+          <span class="gallery-zoom">🔍</span>
+          {% if photo.legende %}<p class="gallery-legende">{{ photo.legende }}</p>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if data.videos %}
+    <div class="videos-grid">
+      {% for video in data.videos %}
+      <div class="video-card">
+        {% if video.type == 'youtube' %}
+          {% set vid_id = video.url.split('v=')[-1].split('&')[0] if 'v=' in video.url else video.url.split('/')[-1] %}
+          <iframe src="https://www.youtube.com/embed/{{ vid_id }}" frameborder="0" allowfullscreen></iframe>
+        {% else %}
+          <video src="/static/uploads/{{ video.fichier }}" controls></video>
+        {% endif %}
+        {% if video.titre %}<p class="video-titre">{{ video.titre }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+    {% if not data.photos and not data.videos %}
+    <div class="empty-gallery">
+      <div style="font-size:3rem;margin-bottom:12px;opacity:0.3;">🖼️</div>
+      <p>La galerie sera bientôt disponible.</p>
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="fermerLightbox()">
+  <button class="lightbox-close" onclick="fermerLightbox()">✕</button>
+  <img id="lightboxImg" src="" alt="">
+  <p id="lightboxLegende"></p>
+</div>
+
+<!-- TÉMOIGNAGES -->
+<section class="section section-alt" id="temoignages">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Ils témoignent</div>
+      <h2 class="section-title">Témoignages</h2>
+      <p class="section-subtitle">Ce que nos membres disent de l'{{ site.nom_site }}</p>
+    </div>
+    {% if data.temoignages %}
+    <div class="temoignages-grid">
+      {% for t in data.temoignages %}
+      <div class="temoignage-card">
+        <div class="temoignage-quote">"</div>
+        <p class="temoignage-texte">{{ t.texte }}</p>
+        <div class="temoignage-author">
+          <div class="temoignage-avatar">{{ t.initiales }}</div>
+          <div>
+            <div class="temoignage-nom">{{ t.nom }}</div>
+            <div class="temoignage-lieu">{{ t.lieu }}</div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="text-align:center;color:var(--text-muted);">Les témoignages seront bientôt publiés.</p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- ACTUALITÉS -->
+<section class="section" id="actualites">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Restez informés</div>
+      <h2 class="section-title">Actualités</h2>
+      <p class="section-subtitle">Les dernières nouvelles de l'association</p>
+    </div>
+    {% if data.actualites %}
+    <div class="actualites-grid">
+      {% for a in data.actualites %}
+      <div class="actu-card">
+        <span class="actu-emoji">{{ a.emoji }}</span>
+        <div class="actu-date">{{ a.date }}</div>
+        <h3 class="actu-titre">{{ a.titre }}</h3>
+        <p class="actu-contenu">{{ a.contenu }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="text-align:center;color:var(--text-muted);">Les actualités seront bientôt publiées.</p>
+    {% endif %}
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section section-alt" id="contact">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">Contactez-nous</div>
+      <h2 class="section-title">Nous écrire</h2>
+      <p class="section-subtitle">Nous vous répondrons dans les 48 heures</p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-info">
+        <h3>Coordonnées</h3>
+        <div class="contact-item">
+          <div class="contact-icon-box">📍</div>
+          <div><strong>Adresse</strong><span>{{ site.contact_adresse }}</span></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon-box">📞</div>
+          <div><strong>Téléphone</strong><span>{{ site.contact_telephone }}</span></div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon-box">✉️</div>
+          <div><strong>Email</strong><span>{{ site.contact_email }}</span></div>
+        </div>
+      </div>
+      <form class="contact-form" onsubmit="envoyerMessage(event)">
+        <div class="form-row">
+          <div class="form-group"><label>Prénom *</label><input type="text" id="cPrenom" placeholder="Votre prénom" required></div>
+          <div class="form-group"><label>Nom</label><input type="text" id="cNom" placeholder="Votre nom"></div>
+        </div>
+        <div class="form-group"><label>Email *</label><input type="email" id="cEmail" placeholder="votre@email.com" required></div>
+        <div class="form-group"><label>Objet</label><input type="text" id="cObjet" placeholder="Sujet de votre message"></div>
+        <div class="form-group"><label>Message *</label><textarea id="cMessage" placeholder="Votre message..." required></textarea></div>
+        <button type="submit" class="btn-submit" id="btnEnvoyer">Envoyer le message →</button>
+        <div id="contactRetour"></div>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-container">
+    <div class="footer-logo">
+      <div class="footer-logo-emblem">
+        {% if logo %}<img src="{{ logo }}" alt="Logo">{% else %}A{% endif %}
+      </div>
+      <span class="footer-logo-name">{{ site.nom_site }}</span>
+    </div>
+    <p class="footer-desc">{{ site.footer_desc }}</p>
+    <hr class="footer-divider">
+    <p class="footer-copy">{{ site.footer_copy }}</p>
+  </div>
+</footer>
+
+<script>
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  });
+  document.getElementById('hamburger').addEventListener('click', () => {
+    document.getElementById('navMenu').classList.toggle('open');
+  });
+  document.querySelectorAll('.nav-link').forEach(l => {
+    l.addEventListener('click', () => document.getElementById('navMenu').classList.remove('open'));
+  });
+  function ouvrirLightbox(src, legende) {
+    document.getElementById('lightboxImg').src = src;
+    document.getElementById('lightboxLegende').textContent = legende || '';
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function fermerLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') fermerLightbox(); });
+  async function envoyerMessage(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnEnvoyer');
+    const retour = document.getElementById('contactRetour');
+    btn.disabled = true; btn.textContent = 'Envoi en cours...';
+    const body = {
+      prenom: document.getElementById('cPrenom').value.trim(),
+      nom: document.getElementById('cNom').value.trim(),
+      email: document.getElementById('cEmail').value.trim(),
+      objet: document.getElementById('cObjet').value.trim(),
+      message: document.getElementById('cMessage').value.trim()
+    };
+    try {
+      const r = await fetch('/contact', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+      const d = await r.json();
+      retour.style.color = d.success ? '#2d6a4f' : '#dc2626';
+      retour.textContent = d.message;
+      if (d.success) e.target.reset();
+    } catch {
+      retour.style.color = '#dc2626';
+      retour.textContent = 'Erreur réseau. Réessayez.';
+    }
+    btn.disabled = false; btn.textContent = 'Envoyer le message →';
+  }
+</script>
+</body>
+</html>
