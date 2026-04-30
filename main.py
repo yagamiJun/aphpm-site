@@ -15,17 +15,19 @@ app.secret_key = "aphpm_secret_key_changez_moi_2025"
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "aphpm2025"
 
-UPLOAD_FOLDER  = os.path.join("static", "uploads")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+UPLOAD_FOLDER  = os.path.join(BASE_DIR, "static", "uploads")
 ALLOWED_IMAGES = {"png", "jpg", "jpeg", "gif", "webp"}
 ALLOWED_VIDEOS = {"mp4", "webm", "ogg", "mov"}
-DATA_FILE      = os.path.join("data", "content.json")
+DATA_FILE      = os.path.join(BASE_DIR, "data", "content.json")
 MAX_FILE_MB    = 50
 
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 app.config["MAX_CONTENT_LENGTH"] = MAX_FILE_MB * 1024 * 1024
 
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-os.makedirs("data", exist_ok=True)
+os.makedirs(os.path.join(BASE_DIR, "data"), exist_ok=True)
 
 # ============================================================
 # DONNÉES PAR DÉFAUT
@@ -67,10 +69,13 @@ SITE_DEFAUT = {
 def lire_data():
     try:
         with open(DATA_FILE, "r", encoding="utf-8-sig") as f:
-            return json.load(f)
+            d = json.load(f)
+            if "comite" not in d:
+                d["comite"] = []
+            return d
     except (FileNotFoundError, json.JSONDecodeError):
         return {"photos": [], "videos": [], "temoignages": [],
-                "actualites": [], "services": [], "site": {}}
+                "actualites": [], "services": [], "comite": [], "site": {}}
 
 def sauvegarder_data(data):
     with open(DATA_FILE, "w", encoding="utf-8") as f:
@@ -97,7 +102,8 @@ def admin_requis(f):
 
 def logo_existe():
     for ext in ALLOWED_IMAGES:
-        if os.path.exists(os.path.join("static", f"logo.{ext}")):
+        chemin = os.path.join(BASE_DIR, "static", f"logo.{ext}")
+        if os.path.exists(chemin):
             return f"/static/logo.{ext}"
     return None
 
@@ -117,7 +123,7 @@ def accueil():
 @app.route("/contact", methods=["POST"])
 def contact():
     data = request.get_json()
-    if not data.get("prenom") or not data.get("email") or not data.get("message"):
+    if not data or not data.get("prenom") or not data.get("email") or not data.get("message"):
         return jsonify({"success": False,
                         "message": "Veuillez remplir tous les champs obligatoires."}), 400
     msg = {
@@ -179,11 +185,11 @@ def changer_logo():
     if not extension_ok(fichier.filename, ALLOWED_IMAGES):
         return jsonify({"success": False, "message": "Format non supporté."})
     for ext in ALLOWED_IMAGES:
-        ancien = os.path.join("static", f"logo.{ext}")
+        ancien = os.path.join(BASE_DIR, "static", f"logo.{ext}")
         if os.path.exists(ancien):
             os.remove(ancien)
     ext = fichier.filename.rsplit(".", 1)[1].lower()
-    chemin = os.path.join("static", f"logo.{ext}")
+    chemin = os.path.join(BASE_DIR, "static", f"logo.{ext}")
     fichier.save(chemin)
     return jsonify({"success": True, "message": "✅ Logo mis à jour !", "url": f"/static/logo.{ext}"})
 
@@ -192,7 +198,7 @@ def changer_logo():
 def supprimer_logo():
     supprime = False
     for ext in ALLOWED_IMAGES:
-        chemin = os.path.join("static", f"logo.{ext}")
+        chemin = os.path.join(BASE_DIR, "static", f"logo.{ext}")
         if os.path.exists(chemin):
             os.remove(chemin)
             supprime = True
@@ -371,6 +377,51 @@ def supprimer_service(service_id):
     return jsonify({"success": True, "message": "Service supprimé."})
 
 # ============================================================
+# ADMIN — COMITÉ
+# ============================================================
+
+@app.route("/admin/comite/ajouter", methods=["POST"])
+@admin_requis
+def ajouter_membre():
+    nom  = request.form.get("nom", "").strip()
+    role = request.form.get("role", "").strip()
+    bio  = request.form.get("bio", "").strip()
+    if not nom or not role:
+        return jsonify({"success": False, "message": "Nom et rôle obligatoires."})
+    data = lire_data()
+    initiales = "".join(w[0].upper() for w in nom.split()[:2])
+    photo_nom = None
+    fichier = request.files.get("photo")
+    if fichier and fichier.filename and extension_ok(fichier.filename, ALLOWED_IMAGES):
+        photo_nom = str(uuid.uuid4()) + "_" + secure_filename(fichier.filename)
+        fichier.save(os.path.join(UPLOAD_FOLDER, photo_nom))
+    data["comite"].append({
+        "id":        str(uuid.uuid4()),
+        "nom":       nom,
+        "role":      role,
+        "bio":       bio,
+        "initiales": initiales,
+        "photo":     photo_nom
+    })
+    sauvegarder_data(data)
+    return jsonify({"success": True, "message": "✅ Membre ajouté au comité !"})
+
+@app.route("/admin/comite/supprimer/<membre_id>", methods=["DELETE"])
+@admin_requis
+def supprimer_membre(membre_id):
+    data = lire_data()
+    membre = next((m for m in data["comite"] if m["id"] == membre_id), None)
+    if not membre:
+        return jsonify({"success": False, "message": "Membre introuvable."})
+    if membre.get("photo"):
+        chemin = os.path.join(UPLOAD_FOLDER, membre["photo"])
+        if os.path.exists(chemin):
+            os.remove(chemin)
+    data["comite"] = [m for m in data["comite"] if m["id"] != membre_id]
+    sauvegarder_data(data)
+    return jsonify({"success": True, "message": "Membre supprimé."})
+
+# ============================================================
 # ADMIN — MESSAGES
 # ============================================================
 
@@ -389,6 +440,6 @@ if __name__ == "__main__":
     print("🚀 Serveur APHPM démarré !")
     print(f"🌐 Local          : http://127.0.0.1:{port}")
     print(f"🌐 Réseau         : http://192.168.1.11:{port}")
-    print(f"🔐 Panneau admin  : http://192.168.1.11:{port}/admin")
+    print(f"🔐 Panneau admin  : http://192.168.1.11:{port}/admin/login")
     print("⛔ Pour arrêter   : CTRL+C\n")
     app.run(debug=True, host=host, port=port)

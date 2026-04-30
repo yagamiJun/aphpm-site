@@ -1,1 +1,24 @@
-﻿{"photos": [], "videos": [], "temoignages": [], "actualites": [], "services": [], "site": {}}
+{
+  "photos": [
+    {
+      "id": "0baba578-c40f-41a8-887a-18fabcc4845e",
+      "fichier": "20895cc7-a4b2-4373-965c-9dd781d2d2a5_WhatsApp_Image_2026-04-27_at_23.30.33_1.jpeg",
+      "legende": ""
+    }
+  ],
+  "videos": [],
+  "temoignages": [],
+  "actualites": [],
+  "services": [],
+  "site": {},
+  "comite": [
+    {
+      "id": "826460b6-1754-4fd6-9749-da2bee5ba031",
+      "nom": "Ougouma BADJATOM",
+      "role": "Président",
+      "bio": "Pasteur",
+      "initiales": "OB",
+      "photo": "17e77ea6-f9a9-46e4-b3e2-16b962886ba2_Capture_decran_2026-04-30_175442.png"
+    }
+  ]
+}
